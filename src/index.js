@@ -1,22 +1,25 @@
+const PACKAGE_NAME = 'AyeAyeForApi:: ';
+
 let IsAyeAyeSetup = false;
 let Apis = [];
 
-export const LOG_LEVELS = {
-   DEBUG: 1,
-   INFO: 2,
-   WARNING: 3,
-   ERROR: 4
-};
+let Logger = console.error;
 
-const LogLevelMaxForSucceed = LOG_LEVELS.INFO;
+export const SetLogger = (logger) => {
+   if (typeof logger === 'function') {
+      Logger = logger;
+   } else {
+      logger(PACKAGE_NAME + 'Expected Function for Setting Logger');
+   }
+};
 
 const DATA_REQUIRED = ['path', 'method', 'function'];
 
 export const Setup = (apis) => {
    if (!Array.isArray(apis) || apis.length <= 0) {
-      //TODO: Use logging logic here
-      console.error(
-         'Please provide a set of APIs to handle, what you gave me makes no sense.'
+      Logger(
+         PACKAGE_NAME +
+            'Please provide a set of APIs to handle, what you gave me makes no sense.'
       );
       return;
    }
@@ -35,6 +38,8 @@ export const Setup = (apis) => {
          apiFailureMessage += `Missing Fields for (${
             api.path || 'Unknown Path'
          }): ${paramValidation.join(', ')}\n`;
+
+         apisValid = false;
       }
 
       let regex = api.regex || '';
@@ -43,7 +48,7 @@ export const Setup = (apis) => {
          let parts = api.path.split('/');
 
          let regexTemp = parts.map((part) => {
-            return part.length > 0 ? (part.includes(':') ? ':w+' : 'w+') : '';
+            return part.length > 0 ? (part.includes(':') ? ':w+' : part) : '';
          });
 
          regex = regexTemp.join('/');
@@ -53,24 +58,25 @@ export const Setup = (apis) => {
    });
 
    if (apisValid) {
-      Apis = apis;
+      Apis = apisWithRegex;
       IsAyeAyeSetup = true;
    } else {
-      //TODO: Use logging logic here
-      console.error(apiFailureMessage);
+      Logger(PACKAGE_NAME + apiFailureMessage);
    }
+
+   return Apis;
 };
 
-const Handle = (path, method, headers) => {
+const Handle = (path, method, headers, apis = Apis) => {
    let api =
-      Apis.find((api) => api.method === method && api.regex.test(path)) || null;
+      apis.find((api) => api.method === method && api.regex.test(path)) || null;
 
    if (api === null) {
-      //TODO: Use logging logic here
-      throw 'API Not Found';
+      Logger(PACKAGE_NAME + 'No Endpoint found, please verify setup.');
+      return false;
    }
 
-   api.function(path, method, headers);
+   return api.function(path, method, headers);
 };
 
 export default Handle;

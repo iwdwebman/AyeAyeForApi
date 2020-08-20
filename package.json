@@ -1,6 +1,6 @@
 {
    "name": "@starrsoftware/aye-aye-for-api",
-   "version": "0.0.1",
+   "version": "0.0.2",
    "description": "API Usage Management that allows easy logging and adding multiple functions to act on different endpoints. Especially designed for AWS Lambda functions",
    "author": "starrsoftware",
    "license": "MIT",
